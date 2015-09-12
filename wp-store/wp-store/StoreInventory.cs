@@ -369,7 +369,7 @@ namespace SoomlaWpStore
                             }
                         }
                         SoomlaUtils.LogDebug(TAG, "finished equip balance sync for itemId: " + itemId);
-                    } catch (NotEnoughGoodsException e) {
+                    } catch (NotEnoughGoodsException) {
                         SoomlaUtils.LogError(TAG, "the item " + itemId + " was not purchased, so cannot be equipped");
                     } catch (InvalidCastException exx) {
                         SoomlaUtils.LogError(TAG, "tried to equip a non-equippable item: " + itemId+ " "+exx.Message);
