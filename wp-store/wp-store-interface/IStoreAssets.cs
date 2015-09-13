@@ -12,6 +12,10 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 
+using SoomlaWpStore.domain.virtualCurrencies;
+using SoomlaWpStore.domain.virtualGoods;
+using SoomlaWpStore.domain;
+
 namespace SoomlaWpStore
 {
     /// <summary>
@@ -73,7 +77,7 @@ namespace SoomlaWpStore
         //NonConsumableItem[] GetNonConsumableItems();
     }
 
-    public class VirtualCategory
+    /*public class VirtualCategory
     {
     }
 
@@ -87,5 +91,5 @@ namespace SoomlaWpStore
 
     public class VirtualCurrency
     {
-    }
+    }*/
 }

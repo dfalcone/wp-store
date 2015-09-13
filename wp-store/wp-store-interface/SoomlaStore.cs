@@ -14,6 +14,9 @@
 
 using System;
 using System.Collections.Generic;
+using SoomlaWpStore.domain;
+using SoomlaWpStore.billing.wp.store;
+
 namespace SoomlaWpStore
 {
     public class SoomlaStore
@@ -176,16 +179,5 @@ namespace SoomlaWpStore
         private const String TAG = "SOOMLA SoomlaStore"; //used for Log messages
         private bool mInitialized = false;
 
-        public class MarketItem
-        {
-        }
-
-        private class PurchasableVirtualItem
-        {
-        }
-
-        public class MarketProductInfos
-        {
-        }
     }
 }

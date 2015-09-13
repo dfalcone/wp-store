@@ -100,8 +100,7 @@ namespace SoomlaWpStore
                     if (item.Value.IsActive)
                     {
                         SoomlaUtils.LogDebug(TAG, "Got owned item: " + item.Value.ProductId);
-
-                        handleSuccessfulPurchase(item.Value.ProductId);
+                        handleSuccessfulPurchase(new StoreTransaction() { ProductId = item.Value.ProductId });
                     }
                 }
             }
@@ -112,8 +111,7 @@ namespace SoomlaWpStore
                     if (item.Value.IsActive)
                     {
                         SoomlaUtils.LogDebug(TAG, "Got owned item: " + item.Value.ProductId);
-
-                        handleSuccessfulPurchase(item.Value.ProductId);
+                        handleSuccessfulPurchase(new StoreTransaction() { ProductId = item.Value.ProductId });
                     }
                 }
             }
@@ -436,29 +434,39 @@ namespace SoomlaWpStore
          *
          * @param purchase purchase whose state is to be checked.
          */
-        private void handleSuccessfulPurchase(/*IabPurchase*/ string productId)
+        private void handleSuccessfulPurchase(/*IabPurchase*/ StoreTransaction transaction)
         {
-            // Need to implement receipt validation
-
             SoomlaUtils.LogDebug(TAG, "TODO handleSuccessfulPurchase");
-
-            PurchasableVirtualItem pvi;
+            
+            PurchasableVirtualItem pvi = null;
             try
             {
-                pvi = StoreInfo.getPurchasableItem(productId);
+                pvi = StoreInfo.getPurchasableItem(transaction.ProductId);
+                if (pvi == null)
+                    return;
+
+                SoomlaUtils.LogDebug(TAG, "IabPurchase successful.");
+
+                consumeIfConsumable(pvi, transaction);
+
+                // Post event of general market purchase success
+                BusProvider.Instance.Post(new MarketPurchaseEvent(pvi, transaction.ReceiptXml, null));
+                pvi.give(1);
+
+                // Post event of item purchase success with receipt as payload
+                BusProvider.Instance.Post(new ItemPurchasedEvent(pvi, null));
             }
             catch (VirtualItemNotFoundException e)
             {
                 SoomlaUtils.LogError(TAG, "(handleSuccessfulPurchase - purchase or query-inventory) "
                         + "ERROR : Couldn't find the " +
-                        " VirtualCurrencyPack OR MarketItem  with productId: " + productId +
+                        " VirtualCurrencyPack OR MarketItem  with productId: " + transaction.ReceiptXml +
                         ". It's unexpected so an unexpected error is being emitted." + " " + e.Message);
                 BusProvider.Instance.Post(new UnexpectedStoreErrorEvent("Couldn't find the productId "
                         + "of a product after purchase or query-inventory." + " " + e.Message));
                 return;
             }
 
-            SoomlaUtils.LogDebug(TAG, "IabPurchase successful.");
 
             // if the purchasable item is NonConsumableItem and it already exists then we
             // don't fire any events.
@@ -472,11 +480,6 @@ namespace SoomlaWpStore
                 }
             }*/
 
-            BusProvider.Instance.Post(new MarketPurchaseEvent(pvi, null, null));
-            pvi.give(1);
-
-            BusProvider.Instance.Post(new ItemPurchasedEvent(pvi, null));
-            consumeIfConsumable(pvi);
 
             /*
             String sku = purchase.getSku();
@@ -564,7 +567,7 @@ namespace SoomlaWpStore
          *
          * @param purchase purchase to be consumed
          */
-        private void consumeIfConsumable(PurchasableVirtualItem pvi)
+        private void consumeIfConsumable(PurchasableVirtualItem pvi, StoreTransaction transaction)
         {
             try
             {
@@ -573,7 +576,9 @@ namespace SoomlaWpStore
                     if (pvi.GetPurchaseType() is PurchaseWithMarket)
                     {
                         PurchaseWithMarket pwm = (PurchaseWithMarket)pvi.GetPurchaseType();
-                        StoreManager.GetInstance().Consume(pwm.getMarketItem().getProductId(), StoreManager.purchaseTransactionId);
+                        string productId = pwm.getMarketItem().getProductId();
+                        if (transaction.ProductId == productId)
+                            StoreManager.GetInstance().Consume(transaction);
                     }
                 }
             }

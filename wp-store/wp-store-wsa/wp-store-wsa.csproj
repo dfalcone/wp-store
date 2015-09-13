@@ -45,6 +45,7 @@
     <Compile Include="billing\wp\store\Dispatcher.cs" />
     <Compile Include="billing\wp\store\MarketProductInfos.cs" />
     <Compile Include="billing\wp\store\StoreManager.cs" />
+    <Compile Include="billing\wp\store\StoreTransaction.cs" />
     <Compile Include="data\GenericStoreAssets.cs" />
     <Compile Include="data\StorageManager.cs" />
     <Compile Include="data\StoreInfo.cs" />

@@ -38,11 +38,62 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="billing\wp\store\Dispatcher.cs" />
+    <Compile Include="billing\wp\store\MarketProductInfos.cs" />
+    <Compile Include="billing\wp\store\StoreManager.cs" />
+    <Compile Include="data\GenericStoreAssets.cs" />
+    <Compile Include="data\StorageManager.cs" />
+    <Compile Include="data\StoreInfo.cs" />
+    <Compile Include="data\StoreJSONConsts.cs" />
+    <Compile Include="data\VirtualCurrencyStorage.cs" />
+    <Compile Include="data\VirtualGoodsStorage.cs" />
+    <Compile Include="data\VirtualItemStorage.cs" />
+    <Compile Include="domain\MarketItem.cs" />
+    <Compile Include="domain\PurchasableVirtualItem.cs" />
+    <Compile Include="domain\VirtualCategory.cs" />
+    <Compile Include="domain\virtualCurrencies\VirtualCurrency.cs" />
+    <Compile Include="domain\virtualCurrencies\VirtualCurrencyPack.cs" />
+    <Compile Include="domain\virtualGoods\EquippableVG.cs" />
+    <Compile Include="domain\virtualGoods\LifetimeVG.cs" />
+    <Compile Include="domain\virtualGoods\SingleUsePackVG.cs" />
+    <Compile Include="domain\virtualGoods\SingleUseVG.cs" />
+    <Compile Include="domain\virtualGoods\UpgradeVG.cs" />
+    <Compile Include="domain\virtualGoods\VirtualGood.cs" />
+    <Compile Include="domain\VirtualItem.cs" />
+    <Compile Include="events\CurrencyBalanceChangedEvent.cs" />
+    <Compile Include="events\GoodBalanceChangedEvent.cs" />
+    <Compile Include="events\GoodEquippedEvent.cs" />
+    <Compile Include="events\GoodUnEquippedEvent.cs" />
+    <Compile Include="events\GoodUpgradeEvent.cs" />
+    <Compile Include="events\ItemPurchasedEvent.cs" />
+    <Compile Include="events\ItemPurchaseStartedEvent.cs" />
+    <Compile Include="events\MarketItemsRefreshFinishedEvent.cs" />
+    <Compile Include="events\MarketItemsRefreshStartedEvent.cs" />
+    <Compile Include="events\MarketPurchaseCancelledEvent.cs" />
+    <Compile Include="events\MarketPurchaseEvent.cs" />
+    <Compile Include="events\MarketPurchaseStartedEvent.cs" />
+    <Compile Include="events\RestoreTransactionsFinishedEvent.cs" />
+    <Compile Include="events\RestoreTransactionsStartedEvent.cs" />
+    <Compile Include="events\SoomlaStoreInitializedEvent.cs" />
+    <Compile Include="events\UnexpectedStoreErrorEvent.cs" />
+    <Compile Include="exceptions\InsufficientFundsException.cs" />
+    <Compile Include="exceptions\NotEnoughGoodsException.cs" />
+    <Compile Include="exceptions\VirtualItemNotFoundException.cs" />
     <Compile Include="IStoreAssets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="purchasesTypes\PurchaseType.cs" />
+    <Compile Include="purchasesTypes\PurchaseWithMarket.cs" />
+    <Compile Include="purchasesTypes\PurchaseWithVirtualItem.cs" />
+    <Compile Include="rewards\VirtualItemReward.cs" />
     <Compile Include="SoomlaStore.cs" />
     <Compile Include="StoreConfig.cs" />
     <Compile Include="StoreInventory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\submodules\soomla-wp-core\soomla-wp-core\soomla-wp-core-interface\soomla-wp-core-interface.csproj">
+      <Project>{a6628168-cf1a-4622-9fe0-e533d269b6c7}</Project>
+      <Name>soomla-wp-core-interface</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

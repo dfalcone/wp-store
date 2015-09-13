@@ -13,10 +13,9 @@
 /// limitations under the License.
 
 using System;
-using SoomlaWpCore;
-using SoomlaWpCore.util;
 using SoomlaWpStore.data;
 using SoomlaWpStore.purchasesTypes;
+using SoomlaWpCore.util;
 
 /**
  * A <code>LifetimeVG</code> is a virtual good that is bought once and kept forever.
@@ -82,17 +81,6 @@ namespace SoomlaWpStore.domain.virtualGoods
      * @return 1 to indicate that the user was given the good
      */
     public override int give(int amount, bool notify) {
-        if(amount > 1) {
-            SoomlaUtils.LogDebug(TAG, "You tried to give more than one LifetimeVG."
-                    + "Will try to give one anyway.");
-            amount = 1;
-        }
-
-        int balance = StorageManager.getVirtualGoodsStorage().getBalance(this);
-
-        if (balance < 1) {
-            return StorageManager.getVirtualGoodsStorage().add(this, amount, notify);
-        }
         return 1;
     }
 

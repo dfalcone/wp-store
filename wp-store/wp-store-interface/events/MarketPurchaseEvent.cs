@@ -1,6 +1,6 @@
 ﻿using SoomlaWpStore.domain;
-using SoomlaWpCore.events;
 using System.Collections.Generic;
+using SoomlaWpCore.events;
 
 namespace SoomlaWpStore.events
 {
@@ -24,7 +24,7 @@ namespace SoomlaWpStore.events
         {
             return mExtra;
         }
-        
+
         public MarketPurchaseEvent(PurchasableVirtualItem item, string payload, Dictionary<string, string> extra)
             : this(item, payload, extra, null)
         {

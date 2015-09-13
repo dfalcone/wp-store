@@ -41,12 +41,8 @@ namespace SoomlaWpStore.billing.wp.store
         public static Store.ListingInformation listingInfos;
         public static Store.LicenseInformation licInfosMock;
         public static Store.ListingInformation listingInfosMock;
-
         public static Dictionary<string,MarketProductInfos> marketProductInfos;
-
-        public static string purchaseReceipt = null; // Receipt for current purchase if any
-        public static Guid purchaseTransactionId = default(Guid); // Windows Store transaction id for current purchase if any
-
+        public static List<StoreTransaction> pendingTransactions = new List<StoreTransaction>();
         private bool Initialized = false;
 
         public void Initialize()
@@ -190,7 +186,7 @@ namespace SoomlaWpStore.billing.wp.store
         /// <param name="productId">    Identifier for the product. </param>
         public void PurchaseProduct(string productId)
         {
-            object task = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            var task = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 DoPurchase(productId);
             });
@@ -201,42 +197,41 @@ namespace SoomlaWpStore.billing.wp.store
             try
             {
                 bool licenceActiv = false;
+                Store.PurchaseResults purchaseResults = null;
+
                 if (StoreConfig.STORE_TEST_MODE)
                 {
                     SoomlaUtils.LogDebug(TAG, "DoPurchase test mode " + productId);
-
-                    var results = await CurAppSimulator.RequestProductPurchaseAsync(productId);
-                    purchaseReceipt = results.ReceiptXml;
-                    purchaseTransactionId = results.TransactionId;
-
+                    purchaseResults = await CurAppSimulator.RequestProductPurchaseAsync(productId);
                     licInfosMock = CurAppSimulator.LicenseInformation;
                     licenceActiv = licInfosMock.ProductLicenses[productId].IsActive;
-                    
                 }
                 else
                 {
                     SoomlaUtils.LogDebug(TAG, "DoPurchase real store" + productId);
-                    
-                    var results = await CurApp.RequestProductPurchaseAsync(productId);
-                    licInfosMock = CurAppSimulator.LicenseInformation;
-                    licenceActiv = licInfosMock.ProductLicenses[productId].IsActive;
-
+                    purchaseResults = await CurApp.RequestProductPurchaseAsync(productId);
                     licInfos = CurApp.LicenseInformation;
                     licenceActiv = licInfos.ProductLicenses[productId].IsActive;
                 }
 
-                if (licenceActiv)
-                {
-                    
-                    OnItemPurchasedCB(productId);
-                }
-                else
+                if (!licenceActiv 
+                    || purchaseResults.Status == Store.ProductPurchaseStatus.NotPurchased 
+                    || purchaseResults.Status == Store.ProductPurchaseStatus.AlreadyPurchased
+                    )
                 {
                     SoomlaUtils.LogDebug(TAG,"Purchase cancelled " + productId);
                     OnItemPurchaseCancelCB(productId, false);
                 }
 
-
+                // Purchase succeeded or has been pending fulfillment
+                StoreTransaction transaction = new StoreTransaction()
+                {
+                    TransactionId = purchaseResults.TransactionId,
+                    ProductId = productId,
+                    ReceiptXml = purchaseResults.ReceiptXml
+                };
+                pendingTransactions.Add(transaction);
+                OnItemPurchasedCB(transaction);
             }
             catch (Exception ex)
             {
@@ -248,19 +243,23 @@ namespace SoomlaWpStore.billing.wp.store
         /// <summary>   Consumes a MANAGED product. </summary>
         ///
         /// <param name="productId">    Identifier for the product. </param>
-        public void Consume(string productId, Guid transactionId)
+        public async void Consume(StoreTransaction transaction)
         {
-            SoomlaUtils.LogDebug(TAG, "WStorePlugin consume " + productId);
+            SoomlaUtils.LogDebug(TAG, "WStorePlugin consume " + transaction.ProductId);
             try
             {
+                Store.FulfillmentResult result = Store.FulfillmentResult.NothingToFulfill;
                 if (StoreConfig.STORE_TEST_MODE)
                 {
-                    var task = CurAppSimulator.ReportConsumableFulfillmentAsync(productId, transactionId);
+                    result = await CurAppSimulator.ReportConsumableFulfillmentAsync(transaction.ProductId, transaction.TransactionId);
                 }
                 else
                 {
-                    var task = CurApp.ReportConsumableFulfillmentAsync(productId, transactionId);
+                    result = await CurApp.ReportConsumableFulfillmentAsync(transaction.ProductId, transaction.TransactionId);
                 }
+
+                if (result == Store.FulfillmentResult.Succeeded)
+                    pendingTransactions.Remove(transaction);
             }
             catch (InvalidOperationException e)
             {
@@ -309,7 +308,7 @@ namespace SoomlaWpStore.billing.wp.store
             return isPurchased;
         }
 
-        public delegate void OnItemPurchasedEventHandler(string _item);
+        public delegate void OnItemPurchasedEventHandler(StoreTransaction _item);
         public static event OnItemPurchasedEventHandler OnItemPurchasedCB;
 
         public delegate void OnItemPurchaseCancelEventHandler(string _item, bool _error);

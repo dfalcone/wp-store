@@ -13,23 +13,21 @@
 /// limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SoomlaWpCore.data;
-using SoomlaWpCore.util;
 using SoomlaWpCore;
+using SoomlaWpCore.util;
+
 namespace SoomlaWpStore.domain
 {
     public abstract class VirtualItem : SoomlaEntity<VirtualItem>
     {
-        public VirtualItem(String Name, String Description, String ItemId) : base(Name, Description, ItemId)
+        public VirtualItem(String Name, String Description, String ItemId)
+            : this(null)
         {
-            
+
         }
 
-        public VirtualItem(JSONObject jsonObject) : base(jsonObject)
+        public VirtualItem(JSONObject jsonObject)
+            : base (jsonObject)
         {
         }
         
@@ -61,12 +59,12 @@ namespace SoomlaWpStore.domain
 
         public String getItemId()
         {
-            return mID;
+            return null;
         }
 
         public String getName()
         {
-            return mName;
+            return null;
         }
 
         private const String TAG = "SOOMLA VirtualItem"; //used for Log messages
