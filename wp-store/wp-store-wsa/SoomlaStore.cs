@@ -438,10 +438,9 @@ namespace SoomlaWpStore
         {
             SoomlaUtils.LogDebug(TAG, "TODO handleSuccessfulPurchase");
             
-            PurchasableVirtualItem pvi = null;
             try
             {
-                pvi = StoreInfo.getPurchasableItem(transaction.ProductId);
+                PurchasableVirtualItem pvi = StoreInfo.getPurchasableItem(transaction.ProductId);
                 if (pvi == null)
                     return;
 
@@ -449,8 +448,11 @@ namespace SoomlaWpStore
 
                 consumeIfConsumable(pvi, transaction);
 
+                Dictionary<string, string> extra = new Dictionary<string, string>();
+                extra.Add("receipt", transaction.ReceiptXml);
+
                 // Post event of general market purchase success
-                BusProvider.Instance.Post(new MarketPurchaseEvent(pvi, transaction.ReceiptXml, null));
+                BusProvider.Instance.Post(new MarketPurchaseEvent(pvi, null, extra));
                 pvi.give(1);
 
                 // Post event of item purchase success with receipt as payload
@@ -466,74 +468,6 @@ namespace SoomlaWpStore
                         + "of a product after purchase or query-inventory." + " " + e.Message));
                 return;
             }
-
-
-            // if the purchasable item is NonConsumableItem and it already exists then we
-            // don't fire any events.
-            // fixes: https://github.com/soomla/unity3d-store/issues/192
-            /*
-            if (pvi is NonConsumableItem) {
-                bool exists = StorageManager.getNonConsumableItemsStorage().
-                        nonConsumableItemExists((NonConsumableItem) pvi);
-                if (exists) {
-                    return;
-                }
-            }*/
-
-
-            /*
-            String sku = purchase.getSku();
-            String developerPayload = purchase.getDeveloperPayload();
-            String token = purchase.getToken();
-
-            PurchasableVirtualItem pvi;
-            try {
-                pvi = StoreInfo.getPurchasableItem(sku);
-            } catch (VirtualItemNotFoundException e) {
-                SoomlaUtils.LogError(TAG, "(handleSuccessfulPurchase - purchase or query-inventory) "
-                        + "ERROR : Couldn't find the " +
-                        " VirtualCurrencyPack OR MarketItem  with productId: " + sku +
-                        ". It's unexpected so an unexpected error is being emitted.");
-                BusProvider.getInstance().post(new OnUnexpectedStoreErrorEvent("Couldn't find the sku "
-                        + "of a product after purchase or query-inventory."));
-                return;
-            }
-
-            switch (purchase.getPurchaseState()) {
-                case 0:
-                    SoomlaUtils.LogDebug(TAG, "IabPurchase successful.");
-
-                    // if the purchasable item is NonConsumableItem and it already exists then we
-                    // don't fire any events.
-                    // fixes: https://github.com/soomla/unity3d-store/issues/192
-                    if (pvi instanceof NonConsumableItem) {
-                        boolean exists = StorageManager.getNonConsumableItemsStorage().
-                                nonConsumableItemExists((NonConsumableItem) pvi);
-                        if (exists) {
-                            return;
-                        }
-                    }
-
-                    BusProvider.getInstance().post(new OnMarketPurchaseEvent
-                            (pvi, developerPayload, token));
-                    pvi.give(1);
-                    BusProvider.getInstance().post(new OnItemPurchasedEvent(pvi, developerPayload));
-
-                    consumeIfConsumable(purchase, pvi);
-
-                    break;
-
-                case 1:
-
-                case 2:
-                    SoomlaUtils.LogDebug(TAG, "IabPurchase refunded.");
-                    if (!StoreConfig.friendlyRefunds) {
-                        pvi.take(1);
-                    }
-                    BusProvider.getInstance().post(new MarketRefundEvent(pvi, developerPayload));
-                    break;
-            }
-            */
         }
 
         /**
